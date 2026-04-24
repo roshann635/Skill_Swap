@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #F0FDF4; /* Very light greenish white */
+  --color-foreground: #001E2B;
+  
+  --color-primary: #00ED64; 
+  --color-secondary: #00684A;
+  --color-accent: #016EE9;
+}
+
+:root {
+  --background: #F0FDF4;
+  --foreground: #001E2B;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+}
+
+/* New Light Theme Glassmorphism */
+.glass {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(0, 104, 74, 0.25) !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 30, 43, 0.05) !important;
+  border-radius: 1rem;
+}
+
+.glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.85) 100%) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(0, 104, 74, 0.25) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 30, 43, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.5) inset !important;
+}
+
+/* Gradients */
+.text-gradient {
+  background: linear-gradient(to right, #00ED64, #00684A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bg-mesh {
+  background-color: #F8FFF9 !important; /* Base white with slightest green hint */
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 237, 100, 0.1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, rgba(0, 104, 74, 0.08) 0, transparent 50%) !important;
+}
+
+/* MAGIC FIX: Flip all hardcoded dark mode utility classes to Light Theme equivalents inside Dashboard */
+.bg-mesh .text-white, .glass-card .text-white { color: #001E2B !important; }
+.bg-mesh .text-gray-500 { color: #475569 !important; } /* slate-600 */
+.bg-mesh .text-gray-400 { color: #64748b !important; } /* slate-500 */
+.bg-mesh .bg-white\/5 { background-color: rgba(0, 104, 74, 0.04) !important; border-color: rgba(0, 104, 74, 0.1) !important;}
+.bg-mesh .border-white\/5 { border-color: rgba(0, 104, 74, 0.08) !important; }
+.bg-mesh .border-white\/10 { border-color: rgba(0, 104, 74, 0.15) !important; }
+.bg-mesh .border-white\/20 { border-color: rgba(0, 104, 74, 0.2) !important; }
+
+/* Keep actual text white for primary/accent buttons and badges */
+.bg-mesh .bg-primary .text-white, 
+.bg-mesh .bg-secondary .text-white,
+.bg-mesh .bg-accent .text-white,
+button.bg-primary { 
+  color: #001E2B !important; /* Dark text on bright Mongo green is much more readable */
+}
+
+/* Change layout backgrounds that were black */
+.bg-black\/50 { background-color: rgba(255, 255, 255, 0.8) !important; }
+.bg-black\/90 { background-color: rgba(240, 253, 244, 0.8) !important; }
+
+/* Animations */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
