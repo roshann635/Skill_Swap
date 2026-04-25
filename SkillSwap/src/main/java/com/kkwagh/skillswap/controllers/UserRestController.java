@@ -54,8 +54,10 @@ public class UserRestController {
             // 3. Save
             return ResponseEntity.ok(userRepository.save(existingUser));
         } catch (Exception e) {
-            // This will return the real error (like "Permission Denied") to your browser
-            return ResponseEntity.status(500).body("Database Error: " + e.getMessage());
+            java.util.Map<String, String> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", e.getMessage());
+            errorResponse.put("details", "Check MongoDB Atlas permissions/IP whitelist");
+            return ResponseEntity.status(500).body(errorResponse);
         }
     }
 
