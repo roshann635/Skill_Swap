@@ -1,5 +1,6 @@
-// Minimal proxy for Next.js 15
-// Clerk middleware removed temporarily for debugging
+import { clerkMiddleware } from "@clerk/nextjs/server";
+
+export default clerkMiddleware();
 
 export const config = {
   matcher: [
