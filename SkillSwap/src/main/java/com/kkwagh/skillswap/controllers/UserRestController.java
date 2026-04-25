@@ -28,7 +28,9 @@ public class UserRestController {
     public ResponseEntity<?> syncUser(@RequestBody User user) {
         try {
             if (user.getClerkId() == null || user.getClerkId().isEmpty()) {
-                return ResponseEntity.badRequest().body("Clerk ID is missing");
+                java.util.Map<String, String> err = new java.util.HashMap<>();
+                err.put("error", "Clerk ID is missing");
+                return ResponseEntity.badRequest().body(err);
             }
 
             // 1. Find existing or create new
@@ -56,7 +58,7 @@ public class UserRestController {
         } catch (Exception e) {
             java.util.Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", e.getMessage());
-            errorResponse.put("details", "Check MongoDB Atlas permissions/IP whitelist");
+            errorResponse.put("details", "MongoDB write failed. Check Atlas permissions.");
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
