@@ -20,10 +20,17 @@ public class UserRestController {
     @Autowired
     private TrustScoreService trustScoreService;
 
-    @GetMapping("/{clerkId}")
-    public ResponseEntity<User> getUserByClerkId(@PathVariable String clerkId) {
-        List<User> users = userRepository.findByClerkId(clerkId);
-        return users.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(users.get(0));
+    @GetMapping("/{idOrClerkId}")
+    public ResponseEntity<User> getUserById(@PathVariable String idOrClerkId) {
+        // 1. Try finding by MongoDB ID first
+        Optional<User> user = userRepository.findById(idOrClerkId);
+        if (user.isPresent()) return ResponseEntity.ok(user.get());
+
+        // 2. Fallback to Clerk ID
+        List<User> usersByClerk = userRepository.findByClerkId(idOrClerkId);
+        if (!usersByClerk.isEmpty()) return ResponseEntity.ok(usersByClerk.get(0));
+
+        return ResponseEntity.notFound().build();
     }
 
     @PostMapping("/sync")
