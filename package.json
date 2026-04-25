@@ -1,0 +1,26 @@
+{
+  "name": "skillswap",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd skillswap-ui && npm run dev",
+    "build": "cd skillswap-ui && npm run build",
+    "start": "cd skillswap-ui && npm run start",
+    "lint": "cd skillswap-ui && npm run lint"
+  },
+  "dependencies": {
+    "next": "^15.5.15",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "typescript": "^20"
+  },
+  "overrides": {
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  }
+}
