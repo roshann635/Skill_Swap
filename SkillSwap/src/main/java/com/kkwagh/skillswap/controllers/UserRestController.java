@@ -6,9 +6,12 @@ import com.kkwagh.skillswap.services.TrustScoreService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin(origins = "*")
 public class UserRestController {
 
     @Autowired
@@ -19,9 +22,8 @@ public class UserRestController {
 
     @GetMapping("/{clerkId}")
     public ResponseEntity<User> getUserByClerkId(@PathVariable String clerkId) {
-        return userRepository.findByClerkId(clerkId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        List<User> users = userRepository.findByClerkId(clerkId);
+        return users.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(users.get(0));
     }
 
     @PostMapping("/sync")
