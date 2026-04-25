@@ -29,6 +29,7 @@ public class UserRestController {
         User existingUser = userRepository.findByClerkId(user.getClerkId())
                 .orElseGet(() -> {
                     user.setCredits(10.0); // Give 10.0 Welcome Credits
+                    user.setTrustScore(4.0); // Initial trust score
                     return user;
                 });
         
