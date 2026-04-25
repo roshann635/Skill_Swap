@@ -42,10 +42,17 @@ export const useWebSocket = (userId: string | undefined) => {
     }, [userId]);
 
     const sendMessage = (receiverId: string, content: string) => {
-        if (stompClient && stompClient.connected) {
+        if (stompClient && stompClient.connected && userId) {
+            const senderName = window.document.title.includes("Chat") ? undefined : undefined; // placeholder logic
+            // We need to pass the name from the hook caller or state
             stompClient.publish({
                 destination: '/app/chat',
-                body: JSON.stringify({ senderId: userId, receiverId, content })
+                body: JSON.stringify({ 
+                    senderId: userId, 
+                    senderName: localStorage.getItem('skillswap_user_name') || "Student",
+                    receiverId, 
+                    content 
+                })
             });
             // Optimistically add message
             setMessages((prev) => [...prev, { senderId: userId, receiverId, content, timestamp: new Date() }]);

@@ -16,6 +16,7 @@ public class Message {
     @Id
     private String id;
     private String senderId;
+    private String senderName;
     private String receiverId;
     private String content;
     private LocalDateTime timestamp;

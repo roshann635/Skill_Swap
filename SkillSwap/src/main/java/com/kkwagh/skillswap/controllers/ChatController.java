@@ -38,7 +38,8 @@ public class ChatController {
         // Also notify the receiver
         Notification notif = new Notification();
         notif.setUserId(chatMessage.getReceiverId());
-        notif.setMessage("New message from " + chatMessage.getSenderId());
+        String name = chatMessage.getSenderName() != null ? chatMessage.getSenderName() : "a student";
+        notif.setMessage("New message from " + name);
         notif.setTimestamp(LocalDateTime.now());
         notif.setRead(false);
         notificationRepository.save(notif);

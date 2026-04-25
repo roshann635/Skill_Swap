@@ -42,6 +42,9 @@ export default function Dashboard() {
       if (res.ok) {
         const data = await res.json();
         setDbUser(data);
+        if (data.name) {
+          localStorage.setItem('skillswap_user_name', data.name);
+        }
         if (!data.academicYear) {
           setIsProfileModalOpen(true);
         }

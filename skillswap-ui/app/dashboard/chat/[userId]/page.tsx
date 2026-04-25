@@ -24,7 +24,10 @@ export default function ChatPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clerkId: clerkUser.id })
-            }).then(res => res.json()).then(data => setDbUser(data));
+            }).then(res => res.json()).then(data => {
+                setDbUser(data);
+                if (data.name) localStorage.setItem('skillswap_user_name', data.name);
+            });
         }
     }, [clerkUser]);
 
