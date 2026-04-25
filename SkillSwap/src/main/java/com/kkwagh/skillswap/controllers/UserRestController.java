@@ -25,41 +25,37 @@ public class UserRestController {
     }
 
     @PostMapping("/sync")
-    public ResponseEntity<User> syncUser(@RequestBody User user) {
-        if (user.getClerkId() == null || user.getClerkId().isEmpty()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        // 1. Find existing or create new
-        User existingUser = userRepository.findByClerkId(user.getClerkId()).orElse(null);
-        
-        if (existingUser == null) {
-            existingUser = new User();
-            existingUser.setClerkId(user.getClerkId());
-            existingUser.setCredits(10.0); // Welcome credits
-            existingUser.setTrustScore(4.0); // Initial trust
-        }
-
-        // 2. Update basic info from Clerk if provided
-        if (user.getName() != null) existingUser.setName(user.getName());
-        if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
-        
-        // 3. Update campus info if provided
-        if (user.getBio() != null) existingUser.setBio(user.getBio());
-        if (user.getDepartment() != null) existingUser.setDepartment(user.getDepartment());
-        if (user.getDivision() != null) existingUser.setDivision(user.getDivision());
-        
-        if (user.getAcademicYear() != null && !user.getAcademicYear().isEmpty()) {
-            existingUser.setAcademicYear(user.getAcademicYear());
-            String year = user.getAcademicYear().toUpperCase();
-            existingUser.setIsSenior(year.equals("TE") || year.equals("BE"));
-        }
-
-        // 4. Save safely
+    public ResponseEntity<?> syncUser(@RequestBody User user) {
         try {
+            if (user.getClerkId() == null || user.getClerkId().isEmpty()) {
+                return ResponseEntity.badRequest().body("Clerk ID is missing");
+            }
+
+            // 1. Find existing or create new
+            User existingUser = userRepository.findByClerkId(user.getClerkId()).orElse(null);
+            
+            if (existingUser == null) {
+                existingUser = new User();
+                existingUser.setClerkId(user.getClerkId());
+                existingUser.setCredits(10.0);
+                existingUser.setTrustScore(4.0);
+            }
+
+            // 2. Update info
+            if (user.getName() != null) existingUser.setName(user.getName());
+            if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
+            
+            if (user.getAcademicYear() != null && !user.getAcademicYear().isEmpty()) {
+                existingUser.setAcademicYear(user.getAcademicYear());
+                String year = user.getAcademicYear().toUpperCase();
+                existingUser.setIsSenior(year.equals("TE") || year.equals("BE"));
+            }
+
+            // 3. Save
             return ResponseEntity.ok(userRepository.save(existingUser));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().build();
+            // This will return the real error (like "Permission Denied") to your browser
+            return ResponseEntity.status(500).body("Database Error: " + e.getMessage());
         }
     }
 
