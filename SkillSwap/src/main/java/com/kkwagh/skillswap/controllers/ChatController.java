@@ -30,8 +30,8 @@ public class ChatController {
     public void processMessage(@Payload Message chatMessage) {
         chatMessage.setTimestamp(LocalDateTime.now());
         Message saved = messageRepository.save(chatMessage);
-        messagingTemplate.convertAndSendToUser(
-                chatMessage.getReceiverId(), "/queue/messages",
+        messagingTemplate.convertAndSend(
+                "/topic/messages/" + chatMessage.getReceiverId(),
                 saved
         );
         
@@ -42,8 +42,8 @@ public class ChatController {
         notif.setTimestamp(LocalDateTime.now());
         notif.setRead(false);
         notificationRepository.save(notif);
-        messagingTemplate.convertAndSendToUser(
-                chatMessage.getReceiverId(), "/queue/notifications",
+        messagingTemplate.convertAndSend(
+                "/topic/notifications/" + chatMessage.getReceiverId(),
                 notif
         );
     }
