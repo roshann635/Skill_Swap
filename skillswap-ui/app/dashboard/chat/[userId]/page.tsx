@@ -114,13 +114,13 @@ export default function ChatPage() {
                             const isMe = msg.senderId === dbUser?.id;
                             return (
                                 <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[75%] p-3 rounded-2xl ${
+                                    <div className={`max-w-[75%] p-3 rounded-2xl bg-primary ${
                                         isMe 
-                                            ? 'bg-primary text-white rounded-tr-sm' 
-                                            : 'bg-white/10 text-gray-200 rounded-tl-sm'
+                                            ? 'text-foreground rounded-tr-sm' 
+                                            : 'text-foreground rounded-tl-sm'
                                     }`}>
-                                        <p className="text-sm">{msg.content}</p>
-                                        <p className="text-[9px] text-white/50 mt-1 text-right">
+                                        <p className="text-sm font-medium">{msg.content}</p>
+                                        <p className="text-[9px] text-foreground/50 mt-1 text-right">
                                             {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                         </p>
                                     </div>
