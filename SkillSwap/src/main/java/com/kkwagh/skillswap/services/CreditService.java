@@ -46,6 +46,7 @@ public class CreditService {
 
     /**
      * Step 2: Release credits to the provider when the gig is completed.
+     * This method assumes the gig is already validated to be in a state where credits can be released.
      */
     // @Transactional
     public void releaseCredits(String gigId) {
@@ -53,7 +54,11 @@ public class CreditService {
                 .orElseThrow(() -> new RuntimeException("Gig not found"));
 
         if (gig.getStatus() != GigStatus.IN_PROGRESS) {
-            throw new RuntimeException("Gig is not in a releasable state");
+            throw new RuntimeException("Gig is not in a releasable state (must be IN_PROGRESS)");
+        }
+
+        if (gig.getProviderId() == null) {
+            throw new RuntimeException("No provider assigned to this gig");
         }
 
         User provider = userRepository.findById(gig.getProviderId())
@@ -63,10 +68,6 @@ public class CreditService {
         provider.setCredits(provider.getCredits() + gig.getCredits());
         userRepository.save(provider);
 
-        // Mark gig as completed
-        gig.setStatus(GigStatus.COMPLETED);
-        gigRepository.save(gig);
-
         // Record Release Transaction
         Transaction transaction = new Transaction();
         transaction.setGigId(gigId);
@@ -75,6 +76,8 @@ public class CreditService {
         transaction.setAmount(gig.getCredits());
         transaction.setType(TransactionType.RELEASE);
         transactionRepository.save(transaction);
+        
+        System.out.println("Credits released for gig: " + gigId + ". Amount: " + gig.getCredits());
     }
 
     /**

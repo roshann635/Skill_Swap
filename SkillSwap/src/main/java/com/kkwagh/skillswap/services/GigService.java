@@ -67,15 +67,19 @@ public class GigService {
     }
 
     public Gig completeGig(String gigId) {
-        // Release credits to the provider upon completion
-        creditService.releaseCredits(gigId);
-        
         Gig gig = gigRepository.findById(gigId)
                 .orElseThrow(() -> new RuntimeException("Gig not found"));
         
-        if (gig.getStatus() != GigStatus.IN_PROGRESS && gig.getStatus() != GigStatus.OPEN) {
-            throw new RuntimeException("Gig cannot be completed from status: " + gig.getStatus());
+        if (gig.getStatus() == GigStatus.COMPLETED) {
+            return gig; // Already completed, no-op
         }
+
+        if (gig.getStatus() != GigStatus.IN_PROGRESS) {
+            throw new RuntimeException("Gig cannot be completed from its current state: " + gig.getStatus() + ". It must be IN_PROGRESS (accepted by a student).");
+        }
+        
+        // Release credits to the provider upon completion
+        creditService.releaseCredits(gigId);
         
         gig.setStatus(GigStatus.COMPLETED);
         gig.setCompletedAt(java.time.LocalDateTime.now());
