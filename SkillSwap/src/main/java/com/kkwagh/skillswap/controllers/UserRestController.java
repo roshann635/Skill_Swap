@@ -26,34 +26,41 @@ public class UserRestController {
 
     @PostMapping("/sync")
     public ResponseEntity<User> syncUser(@RequestBody User user) {
-        User existingUser = userRepository.findByClerkId(user.getClerkId())
-                .orElseGet(() -> {
-                    user.setCredits(10.0); // Give 10.0 Welcome Credits
-                    user.setTrustScore(4.0); // Initial trust score
-                    return user;
-                });
-        
-        // Only update Name/Email if they are currently missing/empty
-        if (user.getName() != null && (existingUser.getName() == null || existingUser.getName().isEmpty())) {
-            existingUser.setName(user.getName());
+        if (user.getClerkId() == null || user.getClerkId().isEmpty()) {
+            return ResponseEntity.badRequest().build();
         }
-        if (user.getEmail() != null && (existingUser.getEmail() == null || existingUser.getEmail().isEmpty())) {
-            existingUser.setEmail(user.getEmail());
-        }
+
+        // 1. Find existing or create new
+        User existingUser = userRepository.findByClerkId(user.getClerkId()).orElse(null);
         
-        // Bio, Dept, Div are usually manual edits from SkilSwap, only update if provided in body
+        if (existingUser == null) {
+            existingUser = new User();
+            existingUser.setClerkId(user.getClerkId());
+            existingUser.setCredits(10.0); // Welcome credits
+            existingUser.setTrustScore(4.0); // Initial trust
+        }
+
+        // 2. Update basic info from Clerk if provided
+        if (user.getName() != null) existingUser.setName(user.getName());
+        if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
+        
+        // 3. Update campus info if provided
         if (user.getBio() != null) existingUser.setBio(user.getBio());
         if (user.getDepartment() != null) existingUser.setDepartment(user.getDepartment());
         if (user.getDivision() != null) existingUser.setDivision(user.getDivision());
         
-        // Handle Academic Year and Seniority
-        if (user.getAcademicYear() != null) {
+        if (user.getAcademicYear() != null && !user.getAcademicYear().isEmpty()) {
             existingUser.setAcademicYear(user.getAcademicYear());
             String year = user.getAcademicYear().toUpperCase();
             existingUser.setIsSenior(year.equals("TE") || year.equals("BE"));
         }
-        
-        return ResponseEntity.ok(userRepository.save(existingUser));
+
+        // 4. Save safely
+        try {
+            return ResponseEntity.ok(userRepository.save(existingUser));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @PostMapping("/{userId}/recompute-trust")
