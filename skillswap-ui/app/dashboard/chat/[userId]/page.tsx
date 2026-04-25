@@ -106,12 +106,20 @@ export default function ChatPage() {
                 {/* Chat Area */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 glass-card border-x border-white/5 bg-black/20">
                     {messages
-                        .filter(msg => 
-                            (msg.senderId === dbUser?.id && msg.receiverId === targetUser?.id) || 
-                            (msg.senderId === targetUser?.id && msg.receiverId === dbUser?.id)
-                        )
+                        .filter(msg => {
+                            const myId = dbUser?.id || dbUser?._id;
+                            const theirId = targetUser?.id || targetUser?._id;
+                            
+                            // Check if the message belongs to this specific conversation
+                            const isFromMeToThem = msg.senderId === myId && msg.receiverId === theirId;
+                            const isFromThemToMe = msg.senderId === theirId && msg.receiverId === myId;
+                            
+                            return isFromMeToThem || isFromThemToMe;
+                        })
                         .map((msg, idx) => {
-                            const isMe = msg.senderId === dbUser?.id;
+                            const myId = dbUser?.id || dbUser?._id;
+                            const isMe = msg.senderId === myId;
+                            
                             return (
                                 <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                                     <div className={`max-w-[75%] p-3 rounded-2xl border border-black/5 ${
