@@ -28,8 +28,17 @@ public class ChatController {
 
     @MessageMapping("/chat")
     public void processMessage(@Payload Message chatMessage) {
+        System.out.println("Received message via WebSocket: " + chatMessage);
+        
+        if (chatMessage.getSenderId() == null || chatMessage.getReceiverId() == null) {
+            System.err.println("Error: senderId or receiverId is null!");
+            return;
+        }
+
         chatMessage.setTimestamp(LocalDateTime.now());
         Message saved = messageRepository.save(chatMessage);
+        System.out.println("Message saved to database with ID: " + saved.getId());
+
         messagingTemplate.convertAndSend(
                 "/topic/messages/" + chatMessage.getReceiverId(),
                 saved
@@ -38,11 +47,13 @@ public class ChatController {
         // Also notify the receiver
         Notification notif = new Notification();
         notif.setUserId(chatMessage.getReceiverId());
+        notif.setSenderId(chatMessage.getSenderId()); // Populate senderId for clickable notifications
         String name = chatMessage.getSenderName() != null ? chatMessage.getSenderName() : "a student";
         notif.setMessage("New message from " + name);
         notif.setTimestamp(LocalDateTime.now());
         notif.setRead(false);
         notificationRepository.save(notif);
+        
         messagingTemplate.convertAndSend(
                 "/topic/notifications/" + chatMessage.getReceiverId(),
                 notif
@@ -58,5 +69,13 @@ public class ChatController {
     @GetMapping("/api/notifications/{userId}")
     public List<Notification> getNotifications(@PathVariable String userId) {
         return notificationRepository.findByUserIdOrderByTimestampDesc(userId);
+    }
+
+    @PostMapping("/api/notifications/read/{userId}/{senderId}")
+    public ResponseEntity<Void> markAsRead(@PathVariable String userId, @PathVariable String senderId) {
+        List<Notification> notifs = notificationRepository.findByUserIdAndSenderIdAndRead(userId, senderId, false);
+        notifs.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(notifs);
+        return ResponseEntity.ok().build();
     }
 }

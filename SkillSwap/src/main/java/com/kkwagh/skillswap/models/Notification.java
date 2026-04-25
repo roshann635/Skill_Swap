@@ -16,6 +16,7 @@ public class Notification {
     @Id
     private String id;
     private String userId;
+    private String senderId; // Added to link to the chat
     private String message;
     private boolean read;
     private LocalDateTime timestamp;

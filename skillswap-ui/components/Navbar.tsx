@@ -103,12 +103,18 @@ export default function Navbar() {
                   ) : (
                       <div className="space-y-2">
                           {notifications.map((n: any) => (
-                              <div key={n.id} className={`p-3 rounded-xl text-sm ${n.read ? 'bg-white/5 text-gray-400' : 'bg-primary/10 text-white'}`}>
-                                  {n.message}
-                                  <div className="text-[10px] text-gray-500 mt-1">
-                                      {new Date(n.timestamp).toLocaleString()}
+                              <Link 
+                                  key={n.id} 
+                                  href={n.senderId ? `/dashboard/chat/${n.senderId}` : '#'}
+                                  onClick={() => setShowNotifications(false)}
+                                  className={`block p-3 rounded-xl text-sm transition-all hover:scale-[1.02] active:scale-[0.98] ${n.read ? 'bg-white/5 text-gray-400' : 'bg-primary/10 text-white border border-primary/20'}`}
+                              >
+                                  <p className="font-medium">{n.message}</p>
+                                  <div className="text-[10px] text-gray-500 mt-1 flex justify-between">
+                                      <span>{new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                      {!n.read && <span className="text-primary font-bold uppercase tracking-tighter">New</span>}
                                   </div>
-                              </div>
+                              </Link>
                           ))}
                       </div>
                   )}

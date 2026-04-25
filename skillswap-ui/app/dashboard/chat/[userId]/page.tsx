@@ -15,37 +15,55 @@ export default function ChatPage() {
     const [targetUser, setTargetUser] = useState<any>(null);
     const [messageInput, setMessageInput] = useState("");
     
-    const { messages, setMessages, sendMessage } = useWebSocket(dbUser?.id);
+    const currentUserId = dbUser?.id || dbUser?._id;
+    const { messages, setMessages, sendMessage } = useWebSocket(currentUserId);
     const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (clerkUser) {
+            console.log("Syncing user with Clerk ID:", clerkUser.id);
             fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/sync`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clerkId: clerkUser.id })
             }).then(res => res.json()).then(data => {
+                console.log("Synced dbUser:", data);
                 setDbUser(data);
                 if (data.name) localStorage.setItem('skillswap_user_name', data.name);
-            });
+            }).catch(err => console.error("Sync failed:", err));
         }
     }, [clerkUser]);
 
     useEffect(() => {
         if (userId) {
+            console.log("Fetching target user with ID/ClerkID:", userId);
             fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`)
                 .then(res => res.json())
-                .then(data => setTargetUser(data));
+                .then(data => {
+                    console.log("Fetched targetUser:", data);
+                    setTargetUser(data);
+                })
+                .catch(err => console.error("Failed to fetch target user:", err));
         }
     }, [userId]);
 
     useEffect(() => {
-        if (dbUser && targetUser) {
-            fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/messages/${dbUser.id}/${targetUser.id}`)
+        const myId = dbUser?.id || dbUser?._id;
+        const theirId = targetUser?.id || targetUser?._id;
+
+        if (myId && theirId) {
+            console.log(`Fetching history between ${myId} and ${theirId}`);
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/messages/${myId}/${theirId}`)
                 .then(res => res.ok ? res.json() : [])
-                .then(data => setMessages(data));
+                .then(data => setMessages(data))
+                .catch(err => console.error("Failed to fetch messages:", err));
+
+            // Mark notifications as read
+            fetch(`${process.env.NEXT_PUBLIC_API_URL}/notifications/read/${myId}/${theirId}`, {
+                method: 'POST'
+            }).catch(err => console.error("Failed to mark notifications as read:", err));
         }
-    }, [dbUser, targetUser]);
+    }, [dbUser, targetUser, setMessages]);
 
     useEffect(() => {
         endOfMessagesRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -54,7 +72,14 @@ export default function ChatPage() {
     const handleSend = (e: React.FormEvent) => {
         e.preventDefault();
         if (messageInput.trim() === "") return;
-        sendMessage(targetUser.id, messageInput);
+        
+        const theirId = targetUser?.id || targetUser?._id;
+        if (!theirId) {
+            console.error("Cannot send message: Target user ID missing");
+            return;
+        }
+        
+        sendMessage(theirId, messageInput);
         setMessageInput("");
     };
 
@@ -80,23 +105,28 @@ export default function ChatPage() {
 
                 {/* Chat Area */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 glass-card border-x border-white/5 bg-black/20">
-                    {messages.map((msg, idx) => {
-                        const isMe = msg.senderId === dbUser?.id;
-                        return (
-                            <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[75%] p-3 rounded-2xl ${
-                                    isMe 
-                                        ? 'bg-primary text-white rounded-tr-sm' 
-                                        : 'bg-white/10 text-gray-200 rounded-tl-sm'
-                                }`}>
-                                    <p className="text-sm">{msg.content}</p>
-                                    <p className="text-[9px] text-white/50 mt-1 text-right">
-                                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
+                    {messages
+                        .filter(msg => 
+                            (msg.senderId === dbUser?.id && msg.receiverId === targetUser?.id) || 
+                            (msg.senderId === targetUser?.id && msg.receiverId === dbUser?.id)
+                        )
+                        .map((msg, idx) => {
+                            const isMe = msg.senderId === dbUser?.id;
+                            return (
+                                <div key={idx} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                    <div className={`max-w-[75%] p-3 rounded-2xl ${
+                                        isMe 
+                                            ? 'bg-primary text-white rounded-tr-sm' 
+                                            : 'bg-white/10 text-gray-200 rounded-tl-sm'
+                                    }`}>
+                                        <p className="text-sm">{msg.content}</p>
+                                        <p className="text-[9px] text-white/50 mt-1 text-right">
+                                            {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
                     <div ref={endOfMessagesRef} />
                 </div>
 
