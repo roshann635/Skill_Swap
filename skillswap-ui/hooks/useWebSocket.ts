@@ -16,12 +16,12 @@ export const useWebSocket = (userId: string | undefined) => {
             webSocketFactory: () => new SockJS(`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/ws`),
             onConnect: () => {
                 console.log("Connected to WebSocket");
-                client.subscribe(`/user/${userId}/queue/notifications`, (message) => {
+                client.subscribe(`/topic/notifications/${userId}`, (message) => {
                     if (message.body) {
                         setNotifications((prev) => [JSON.parse(message.body), ...prev]);
                     }
                 });
-                client.subscribe(`/user/${userId}/queue/messages`, (message) => {
+                client.subscribe(`/topic/messages/${userId}`, (message) => {
                     if (message.body) {
                         setMessages((prev) => [...prev, JSON.parse(message.body)]);
                     }
