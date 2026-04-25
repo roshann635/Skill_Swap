@@ -42,14 +42,16 @@ export default function Dashboard() {
       if (res.ok) {
         const data = await res.json();
         setDbUser(data);
-        // Show profile modal if Academic Year is missing
         if (!data.academicYear) {
           setIsProfileModalOpen(true);
         }
         return data;
+      } else {
+        const errorData = await res.json();
+        console.error("Backend Sync Error Details:", errorData);
       }
     } catch (err) {
-      console.error("User sync failed:", err);
+      console.error("Network error during sync:", err);
     }
     return null;
   };
