@@ -1,6 +1,5 @@
 {
   "buildCommand": "cd skillswap-ui && npm run build",
   "outputDirectory": "skillswap-ui/.next",
-  "installCommand": "cd skillswap-ui && npm install",
-  "framework": "nextjs"
+  "installCommand": "cd skillswap-ui && npm install"
 }
