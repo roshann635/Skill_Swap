@@ -33,17 +33,26 @@ public class UserRestController {
                 return ResponseEntity.badRequest().body(err);
             }
 
-            // 1. Find existing or create new
-            User existingUser = userRepository.findByClerkId(user.getClerkId()).orElse(null);
+            // 1. Get all matches
+            List<User> users = userRepository.findByClerkId(user.getClerkId());
             
-            if (existingUser == null) {
+            User existingUser;
+            if (users.isEmpty()) {
                 existingUser = new User();
                 existingUser.setClerkId(user.getClerkId());
                 existingUser.setCredits(10.0);
                 existingUser.setTrustScore(4.0);
+            } else {
+                existingUser = users.get(0);
+                // 2. SELF-HEALING: If there are duplicates, delete the extras!
+                if (users.size() > 1) {
+                    for (int i = 1; i < users.size(); i++) {
+                        userRepository.delete(users.get(i));
+                    }
+                }
             }
 
-            // 2. Update info
+            // 3. Update info
             if (user.getName() != null) existingUser.setName(user.getName());
             if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
             
@@ -53,12 +62,12 @@ public class UserRestController {
                 existingUser.setIsSenior(year.equals("TE") || year.equals("BE"));
             }
 
-            // 3. Save
+            // 4. Save
             return ResponseEntity.ok(userRepository.save(existingUser));
         } catch (Exception e) {
             java.util.Map<String, String> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", e.getMessage());
-            errorResponse.put("details", "MongoDB write failed. Check Atlas permissions.");
+            errorResponse.put("details", "Final fallback triggered. Sync failed.");
             return ResponseEntity.status(500).body(errorResponse);
         }
     }
