@@ -18,11 +18,14 @@ public class CreditService {
     @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private ActivityService activityService;
+
     /**
      * Step 1: Escrow credits when a gig is accepted.
      * Decrements seeker balance and records an ESCROW transaction.
      */
-    // @Transactional
+    @Transactional
     public void escrowCredits(String gigId, String seekerId, Double amount) {
         User seeker = userRepository.findById(seekerId)
                 .orElseThrow(() -> new RuntimeException("Seeker not found"));
@@ -42,13 +45,15 @@ public class CreditService {
         transaction.setAmount(amount);
         transaction.setType(TransactionType.ESCROW);
         transactionRepository.save(transaction);
+
+        activityService.logActivity(seekerId, "Escrowed " + amount + " credits for help request", "TRANSACTION");
     }
 
     /**
      * Step 2: Release credits to the provider when the gig is completed.
      * This method assumes the gig is already validated to be in a state where credits can be released.
      */
-    // @Transactional
+    @Transactional
     public void releaseCredits(String gigId) {
         Gig gig = gigRepository.findById(gigId)
                 .orElseThrow(() -> new RuntimeException("Gig not found"));
@@ -77,13 +82,16 @@ public class CreditService {
         transaction.setType(TransactionType.RELEASE);
         transactionRepository.save(transaction);
         
+        activityService.logActivity(gig.getProviderId(), "Earned " + gig.getCredits() + " credits for helping " + gig.getRequesterName(), "CONTRIBUTION");
+        activityService.logActivity(gig.getRequesterId(), "Released " + gig.getCredits() + " credits to " + provider.getName(), "RESOLVED");
+        
         System.out.println("Credits released for gig: " + gigId + ". Amount: " + gig.getCredits());
     }
 
     /**
      * Step 3: Revert credits back to seeker if the gig is cancelled.
      */
-    // @Transactional
+    @Transactional
     public void revertCredits(String gigId) {
         Gig gig = gigRepository.findById(gigId)
                 .orElseThrow(() -> new RuntimeException("Gig not found"));

@@ -21,8 +21,13 @@ public class GigService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private ActivityService activityService;
+
     public Gig createGig(Gig gig) {
-        return gigRepository.save(gig);
+        Gig savedGig = gigRepository.save(gig);
+        activityService.logActivity(gig.getRequesterId(), "Requested help: " + gig.getTitle(), "REQUEST");
+        return savedGig;
     }
 
     public List<Gig> getAllOpenGigs() {
@@ -63,7 +68,10 @@ public class GigService {
         gig.setStatus(GigStatus.IN_PROGRESS);
         gig.setProviderId(providerId);
         gig.setQrToken(java.util.UUID.randomUUID().toString());
-        return gigRepository.save(gig);
+        
+        Gig savedGig = gigRepository.save(gig);
+        activityService.logActivity(providerId, "Accepted help request: " + gig.getTitle(), "CONTRIBUTION");
+        return savedGig;
     }
 
     public Gig completeGig(String gigId) {
@@ -80,10 +88,21 @@ public class GigService {
         
         // Release credits to the provider upon completion
         creditService.releaseCredits(gigId);
+
+        // Increment provider trust score
+        userRepository.findById(gig.getProviderId()).ifPresent(provider -> {
+            provider.setTrustScore((provider.getTrustScore() == null ? 0 : provider.getTrustScore()) + 0.1);
+            userRepository.save(provider);
+        });
         
         gig.setStatus(GigStatus.COMPLETED);
         gig.setCompletedAt(java.time.LocalDateTime.now());
-        return gigRepository.save(gig);
+        Gig savedGig = gigRepository.save(gig);
+        
+        activityService.logActivity(gig.getRequesterId(), "Resolved request: " + gig.getTitle(), "RESOLVED");
+        activityService.logActivity(gig.getProviderId(), "Completed contribution for: " + gig.getTitle(), "CONTRIBUTION");
+        
+        return savedGig;
     }
 
     public Gig verifyQrHandshake(String gigId, String qrToken, String scannerId) {

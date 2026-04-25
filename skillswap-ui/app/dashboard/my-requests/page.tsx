@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import { LayoutDashboard, CheckCircle2, Clock, Inbox, Zap, FileText, ChevronDown, ChevronUp, QrCode, ScanLine } from "lucide-react";
+import { LayoutDashboard, CheckCircle2, Clock, Inbox, Zap, FileText, ChevronDown, ChevronUp, QrCode, ScanLine, MessageSquare } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { motion } from "framer-motion";
@@ -223,6 +223,23 @@ function RequestCard({ req, isOwner, onRelease, onVerifyQR }: { req: any; isOwne
           {isExpanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
         </button>
       </div>
+
+      {/* Quick Action: Chat */}
+      {req.status !== 'COMPLETED' && (
+        <div className="mt-4">
+            <button 
+                onClick={() => {
+                    const targetId = isOwner ? req.providerId : req.requesterId;
+                    if (targetId) window.location.href = `/dashboard/chat/${targetId}`;
+                    else alert("Wait for someone to accept this request first!");
+                }}
+                className="w-full py-2 bg-white/5 border border-white/10 rounded-xl text-[10px] font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+            >
+                <MessageSquare className="w-3 h-3" />
+                Chat with {isOwner ? 'Helper' : 'Requester'}
+            </button>
+        </div>
+      )}
 
       {/* Expandable Details */}
       {isExpanded && (

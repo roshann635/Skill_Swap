@@ -44,7 +44,7 @@ export default function Navbar() {
     { name: "My Requests", href: "/dashboard/my-requests", icon: LayoutDashboard },
     { name: "Study Vault", href: "/dashboard/notes", icon: BookOpen },
     { name: "Seniors", href: "/dashboard/seniors", icon: Users },
-    { name: "Activity", href: "/dashboard/wallet", icon: Clock },
+    { name: "Log", href: "/dashboard/activity-log", icon: Clock },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 

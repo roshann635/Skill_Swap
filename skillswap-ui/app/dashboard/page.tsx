@@ -19,6 +19,7 @@ export default function Dashboard() {
     avgResponseTime: "15m"
   });
   const [dbUser, setDbUser] = useState<any>(null);
+  const [activities, setActivities] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +82,17 @@ export default function Dashboard() {
     }
   };
 
+  const fetchActivities = async (userId: string) => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/activities/${userId}`);
+      if (res.ok) {
+        setActivities(await res.json());
+      }
+    } catch (err) {
+      console.error("Failed to fetch activities:", err);
+    }
+  };
+
   const handleHelp = async (reqId: string) => {
     let activeUser = dbUser;
 
@@ -115,7 +127,10 @@ export default function Dashboard() {
     const initDashboard = async () => {
       if (!clerkUser) return;
       setIsLoading(true);
-      await syncUser();
+      const user = await syncUser();
+      if (user) {
+        fetchActivities(user.id);
+      }
       await fetchRequestsAndStats();
     };
     initDashboard();
@@ -200,80 +215,112 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Gigs Grid */}
-        {isLoading ? (
-          <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-          </div>
-        ) : openRequests
-            .filter(req => req.requesterId !== dbUser?.id)
-            .filter(req => 
-              req.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-              req.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              (req.department || '').toLowerCase().includes(searchQuery.toLowerCase())
-            ).length === 0 ? (
-          <div className="text-center py-20 glass-card p-10 rounded-3xl">
-            <p className="text-gray-500 mb-4">No matching requests found.</p>
-            <button onClick={() => setSearchQuery("")} className="text-primary font-bold hover:underline">
-              Clear search
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {openRequests
-              .filter(req => req.requesterId !== dbUser?.id)
-              .filter(req => 
-                req.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                req.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (req.department || '').toLowerCase().includes(searchQuery.toLowerCase())
-              ).map((req, i) => (
-            <motion.div
-              key={req.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
-              className="glass-card p-6 rounded-3xl group hover:border-primary/50 transition-all cursor-pointer relative overflow-hidden"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center font-bold text-primary border border-primary/20">
-                     {req.requesterName ? req.requesterName[0].toUpperCase() : 'S'}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-white leading-none mb-1">{req.requesterName || "Student"}</p>
-                    <p className="text-[10px] font-bold text-gray-400">{req.requesterYear || 'FE'} • {req.requesterDepartment || req.department}</p>
-                  </div>
-                </div>
-                {req.urgency && (
-                  <div className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded-lg border border-accent/20 animate-pulse">
-                    URGENT
-                  </div>
-                )}
+        {/* Main Content Area: Feed + Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* Feed */}
+          <div className="lg:col-span-3">
+            {isLoading ? (
+              <div className="flex justify-center items-center py-20">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
               </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors leading-tight mb-2">
-                {req.title}
-              </h3>
-              <p className="text-sm text-gray-400 mb-6 line-clamp-2">{req.description}</p>
-              
-              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                   {req.category || "General Help"}
-                </div>
-                <button 
-                  onClick={() => handleHelp(req.id)}
-                  className="text-sm font-bold text-primary group-hover:underline underline-offset-4 flex items-center gap-1"
-                >
-                  I can Help
-                  <Zap className="w-3 h-3" />
+            ) : openRequests
+                .filter(req => req.requesterId !== dbUser?.id)
+                .filter(req => 
+                  req.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                  req.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (req.department || '').toLowerCase().includes(searchQuery.toLowerCase())
+                ).length === 0 ? (
+              <div className="text-center py-20 glass-card p-10 rounded-3xl">
+                <p className="text-gray-500 mb-4">No matching requests found.</p>
+                <button onClick={() => setSearchQuery("")} className="text-primary font-bold hover:underline">
+                  Clear search
                 </button>
               </div>
-
-              {/* Hover Glow */}
-              <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-            </motion.div>
-          ))}
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {openRequests
+                  .filter(req => req.requesterId !== dbUser?.id)
+                  .filter(req => 
+                    req.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    req.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    (req.department || '').toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map((req, i) => (
+                <motion.div
+                  key={req.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="glass-card p-6 rounded-3xl group hover:border-primary/50 transition-all cursor-pointer relative overflow-hidden"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center font-bold text-primary border border-primary/20">
+                         {req.requesterName ? req.requesterName[0].toUpperCase() : 'S'}
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-white leading-none mb-1">{req.requesterName || "Student"}</p>
+                        <p className="text-[10px] font-bold text-gray-400">{req.requesterYear || 'FE'} • {req.requesterDepartment || req.department}</p>
+                      </div>
+                    </div>
+                    {req.urgency && (
+                      <div className="text-[10px] font-bold text-accent bg-accent/10 px-2 py-1 rounded-lg border border-accent/20 animate-pulse">
+                        URGENT
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors leading-tight mb-2">
+                    {req.title}
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-6 line-clamp-2">{req.description}</p>
+                  
+                  <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div className="flex items-center gap-1 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                       {req.category || "General Help"}
+                    </div>
+                    <button 
+                      onClick={() => handleHelp(req.id)}
+                      className="text-sm font-bold text-primary group-hover:underline underline-offset-4 flex items-center gap-1"
+                    >
+                      I can Help
+                      <Zap className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="absolute -bottom-10 -right-10 w-24 h-24 bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </motion.div>
+              ))}
+              </div>
+            )}
           </div>
-        )}
+
+          {/* Sidebar: Activity Log */}
+          <div className="hidden lg:block">
+            <div className="glass-card p-6 rounded-3xl sticky top-24">
+              <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                Recent Activity
+              </h3>
+              
+              <div className="space-y-6">
+                {activities.length === 0 ? (
+                  <p className="text-xs text-gray-500">No recent activity.</p>
+                ) : activities.slice(0, 5).map((activity, i) => (
+                  <div key={i} className="relative pl-6 border-l border-white/10">
+                    <div className="absolute left-[-5px] top-1 w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(0,237,100,0.5)]"></div>
+                    <p className="text-xs text-white font-medium mb-1">{activity.description}</p>
+                    <p className="text-[10px] text-gray-500">{new Date(activity.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => window.location.href = '/dashboard/activity-log'}
+                className="w-full mt-8 py-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-bold text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+              >
+                View Full Log
+              </button>
+            </div>
+          </div>
+        </div>
       </main>
 
       <CreateGigModal 
