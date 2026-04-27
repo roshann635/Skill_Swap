@@ -70,6 +70,15 @@ public class UserRestController {
                 String year = user.getAcademicYear().toUpperCase();
                 existingUser.setIsSenior(year.equals("TE") || year.equals("BE"));
             }
+            if (user.getDepartment() != null && !user.getDepartment().isEmpty()) {
+                existingUser.setDepartment(user.getDepartment());
+            }
+            if (user.getDivision() != null && !user.getDivision().isEmpty()) {
+                existingUser.setDivision(user.getDivision());
+            }
+            if (user.getBio() != null && !user.getBio().isEmpty()) {
+                existingUser.setBio(user.getBio());
+            }
 
             // 4. Save
             return ResponseEntity.ok(userRepository.save(existingUser));

@@ -13,6 +13,7 @@ interface CompleteProfileModalProps {
 
 export default function CompleteProfileModal({ isOpen, onClose, onSuccess, clerkUser }: CompleteProfileModalProps) {
   const [formData, setFormData] = useState({
+    name: clerkUser?.fullName || "",
     academicYear: "FE",
     department: "Computer",
     division: "A",
@@ -29,7 +30,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onSuccess, clerk
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           clerkId: clerkUser.id,
-          name: clerkUser.fullName,
+          name: formData.name || clerkUser.fullName,
           email: clerkUser.primaryEmailAddress?.emailAddress,
           academicYear: formData.academicYear,
           department: formData.department,
@@ -73,6 +74,21 @@ export default function CompleteProfileModal({ isOpen, onClose, onSuccess, clerk
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">Full Name</label>
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter your full name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-1">Academic Year</label>

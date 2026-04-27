@@ -46,7 +46,7 @@ export default function Dashboard() {
         if (data.name) {
           localStorage.setItem('skillswap_user_name', data.name);
         }
-        if (!data.academicYear) {
+        if (!data.academicYear || !data.name) {
           setIsProfileModalOpen(true);
         }
         return data;
