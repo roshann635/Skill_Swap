@@ -1,5 +1,7 @@
 package com.kkwagh.skillswap.controllers;
 
+import com.kkwagh.skillswap.services.NotificationService;
+
 import com.kkwagh.skillswap.models.Message;
 import com.kkwagh.skillswap.models.Notification;
 import com.kkwagh.skillswap.repositories.MessageRepository;
@@ -27,6 +29,9 @@ public class ChatController {
     @Autowired
     private NotificationRepository notificationRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     @MessageMapping("/chat")
     public void processMessage(@Payload Message chatMessage) {
         System.out.println("Received message via WebSocket: " + chatMessage);
@@ -45,19 +50,12 @@ public class ChatController {
                 saved
         );
         
-        // Also notify the receiver
-        Notification notif = new Notification();
-        notif.setUserId(chatMessage.getReceiverId());
-        notif.setSenderId(chatMessage.getSenderId()); // Populate senderId for clickable notifications
+        // Use central notification service
         String name = chatMessage.getSenderName() != null ? chatMessage.getSenderName() : "a student";
-        notif.setMessage("New message from " + name);
-        notif.setTimestamp(LocalDateTime.now());
-        notif.setRead(false);
-        notificationRepository.save(notif);
-        
-        messagingTemplate.convertAndSend(
-                "/topic/notifications/" + chatMessage.getReceiverId(),
-                notif
+        notificationService.sendNotification(
+                chatMessage.getReceiverId(),
+                "New message from " + name,
+                chatMessage.getSenderId()
         );
     }
 

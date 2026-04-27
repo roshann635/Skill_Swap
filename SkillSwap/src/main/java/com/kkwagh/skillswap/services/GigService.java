@@ -1,5 +1,7 @@
 package com.kkwagh.skillswap.services;
 
+import com.kkwagh.skillswap.services.NotificationService;
+
 import com.kkwagh.skillswap.models.Gig;
 import com.kkwagh.skillswap.models.GigStatus;
 import com.kkwagh.skillswap.repositories.GigRepository;
@@ -23,6 +25,9 @@ public class GigService {
 
     @Autowired
     private ActivityService activityService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     public Gig createGig(Gig gig) {
         Gig savedGig = gigRepository.save(gig);
@@ -71,6 +76,13 @@ public class GigService {
         
         Gig savedGig = gigRepository.save(gig);
         activityService.logActivity(providerId, "Accepted help request: " + gig.getTitle(), "CONTRIBUTION");
+        
+        // Notify Requester
+        notificationService.sendNotification(
+            gig.getRequesterId(),
+            "Your request '" + gig.getTitle() + "' was accepted by a student!"
+        );
+        
         return savedGig;
     }
 
@@ -101,6 +113,12 @@ public class GigService {
         
         activityService.logActivity(gig.getRequesterId(), "Resolved request: " + gig.getTitle(), "RESOLVED");
         activityService.logActivity(gig.getProviderId(), "Completed contribution for: " + gig.getTitle(), "CONTRIBUTION");
+        
+        // Notify Provider
+        notificationService.sendNotification(
+            gig.getProviderId(),
+            "You earned " + gig.getCredits() + " credits for completing '" + gig.getTitle() + "'!"
+        );
         
         return savedGig;
     }
@@ -139,7 +157,15 @@ public class GigService {
         gig.setFileUrl(fileUrl);
         gig.setFileName(fileName);
         gig.setSolutionNote(note);
-        return gigRepository.save(gig);
+        Gig savedGig = gigRepository.save(gig);
+        
+        // Notify Requester
+        notificationService.sendNotification(
+            gig.getRequesterId(),
+            "A solution has been submitted for '" + gig.getTitle() + "'. Please verify!"
+        );
+        
+        return savedGig;
     }
 
     public List<Gig> getGigsByRequester(String userId) {

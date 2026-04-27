@@ -21,9 +21,15 @@ export default function Navbar() {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ clerkId: user.id })
           })
-          .then(res => res.json())
+          .then(async res => {
+              if (!res.ok) {
+                  const text = await res.text();
+                  throw new Error(`Backend sync failed: ${res.status} ${text}`);
+              }
+              return res.json();
+          })
           .then(data => setDbUser(data))
-          .catch(err => console.error("Backend sync failed:", err));
+          .catch(err => console.error("Sync error:", err));
       }
   }, [user]);
 

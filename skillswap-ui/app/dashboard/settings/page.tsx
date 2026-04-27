@@ -37,6 +37,9 @@ export default function SettingsPage() {
           division: data.division || "A",
           bio: data.bio || "",
         });
+      } else {
+        const errorText = await res.text();
+        console.error("Failed to fetch user settings:", errorText);
       }
     };
     fetchUser();

@@ -51,8 +51,8 @@ export default function Dashboard() {
         }
         return data;
       } else {
-        const errorData = await res.json();
-        console.error("Backend Sync Error Details:", errorData);
+        const errorText = await res.text();
+        console.error("Backend Sync Error Details:", errorText);
       }
     } catch (err) {
       console.error("Network error during sync:", err);
@@ -87,6 +87,8 @@ export default function Dashboard() {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/activities/${userId}`);
       if (res.ok) {
         setActivities(await res.json());
+      } else {
+        console.error("Failed to fetch activities:", await res.text());
       }
     } catch (err) {
       console.error("Failed to fetch activities:", err);

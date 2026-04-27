@@ -26,11 +26,14 @@ export default function ChatPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ clerkId: clerkUser.id })
-            }).then(res => res.json()).then(data => {
+            }).then(async res => {
+                if (!res.ok) throw new Error(await res.text());
+                return res.json();
+            }).then(data => {
                 console.log("Synced dbUser:", data);
                 setDbUser(data);
                 if (data.name) localStorage.setItem('skillswap_user_name', data.name);
-            }).catch(err => console.error("Sync failed:", err));
+            }).catch(err => console.error("Chat sync failed:", err));
         }
     }, [clerkUser]);
 
@@ -38,7 +41,10 @@ export default function ChatPage() {
         if (userId) {
             console.log("Fetching target user with ID/ClerkID:", userId);
             fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${userId}`)
-                .then(res => res.json())
+                .then(async res => {
+                    if (!res.ok) throw new Error(await res.text());
+                    return res.json();
+                })
                 .then(data => {
                     console.log("Fetched targetUser:", data);
                     setTargetUser(data);
@@ -110,9 +116,13 @@ export default function ChatPage() {
                             const myId = dbUser?.id || dbUser?._id;
                             const theirId = targetUser?.id || targetUser?._id;
                             
-                            // Check if the message belongs to this specific conversation
-                            const isFromMeToThem = msg.senderId === myId && msg.receiverId === theirId;
-                            const isFromThemToMe = msg.senderId === theirId && msg.receiverId === myId;
+                            if (!myId || !theirId) return true; // Show all while loading to be safe, or hide all? Better show all for debug.
+                            
+                            const msgSenderId = msg.senderId;
+                            const msgReceiverId = msg.receiverId;
+                            
+                            const isFromMeToThem = msgSenderId === myId && msgReceiverId === theirId;
+                            const isFromThemToMe = msgSenderId === theirId && msgReceiverId === myId;
                             
                             return isFromMeToThem || isFromThemToMe;
                         })

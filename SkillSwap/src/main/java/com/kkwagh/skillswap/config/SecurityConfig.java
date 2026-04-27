@@ -20,8 +20,10 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .formLogin(form -> form.disable())
+            .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // We'll tighten this later with Clerk JWT
+                .anyRequest().permitAll()
             );
         
         return http.build();
@@ -34,7 +36,8 @@ public class SecurityConfig {
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
                 "http://localhost:3001",
-                "https://*.vercel.app"
+                "https://*.vercel.app",
+                "https://*.onrender.com"
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
