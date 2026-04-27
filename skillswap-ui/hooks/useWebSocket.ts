@@ -50,7 +50,7 @@ export const useWebSocket = (userId: string | undefined) => {
                             // We check by content and timestamp or ID if available
                             const isDuplicate = prev.some(m => 
                                 (m.id && m.id === newMsg.id) || 
-                                (m.content === newMsg.content && m.senderId === newMsg.senderId && Math.abs(new Date(m.timestamp).getTime() - new Date(newMsg.timestamp).getTime()) < 2000)
+                                (m.content === newMsg.content && m.senderId === newMsg.senderId && Math.abs(new Date(m.timestamp + (m.timestamp.endsWith('Z') ? '' : 'Z')).getTime() - new Date(newMsg.timestamp + (newMsg.timestamp.endsWith('Z') ? '' : 'Z')).getTime()) < 2000)
                             );
                             
                             if (isDuplicate) {

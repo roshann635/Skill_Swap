@@ -139,7 +139,7 @@ export default function ChatPage() {
                                     }`}>
                                         <p className="text-sm font-semibold">{msg.content}</p>
                                         <p className="text-[10px] opacity-60 mt-1 text-right">
-                                            {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                                            {msg.timestamp ? new Date(msg.timestamp + (msg.timestamp.endsWith('Z') ? '' : 'Z')).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                         </p>
                                     </div>
                                 </div>
