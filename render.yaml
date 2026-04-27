@@ -10,19 +10,3 @@ services:
         value: "8080"
       - key: MONGODB_URI
         sync: false
-
-  - type: web
-    name: skillswap-web
-    env: node
-    plan: free
-    region: oregon
-    rootDir: skillswap-ui
-    buildCommand: npm install && npm run build
-    startCommand: npm start
-    envVars:
-      - key: NEXT_PUBLIC_API_URL
-        sync: false
-      - key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-        sync: false
-      - key: CLERK_SECRET_KEY
-        sync: false

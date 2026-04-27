@@ -44,3 +44,9 @@ jdk*
 node_modules/
 target/
 .env
+*.pem
+*.key
+*.cert
+credentials.json
+secrets.json
+application-secret.properties

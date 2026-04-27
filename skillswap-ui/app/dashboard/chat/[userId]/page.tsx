@@ -95,7 +95,7 @@ export default function ChatPage() {
             <main className="max-w-4xl mx-auto w-full flex-1 p-4 flex flex-col h-[calc(100vh-64px)]">
                 {/* Header */}
                 <div className="glass-card p-4 rounded-t-3xl border-b border-white/10 flex items-center gap-4">
-                    <Link href="/dashboard/seniors" className="p-2 hover:bg-white/5 rounded-full text-gray-400">
+                    <Link href="/dashboard/connect" className="p-2 hover:bg-white/5 rounded-full text-gray-400">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <div className="flex items-center gap-3">

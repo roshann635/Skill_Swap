@@ -61,7 +61,7 @@ public class ChatController {
 
     @GetMapping("/api/messages/{senderId}/{receiverId}")
     public List<Message> getMessages(@PathVariable String senderId, @PathVariable String receiverId) {
-        return messageRepository.findBySenderIdAndReceiverIdOrReceiverIdAndSenderIdOrderByTimestampAsc(
+        return messageRepository.findBySenderIdAndReceiverIdOrSenderIdAndReceiverIdOrderByTimestampAsc(
                 senderId, receiverId, receiverId, senderId);
     }
 

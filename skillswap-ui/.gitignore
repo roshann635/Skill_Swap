@@ -32,7 +32,6 @@ yarn-error.log*
 
 # env files (exclude production which is for Vercel)
 .env*
-!.env.production
 
 # vercel
 .vercel
