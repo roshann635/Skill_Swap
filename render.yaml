@@ -2,6 +2,7 @@ services:
   - type: web
     name: skillswap-api
     env: docker
+    plan: free
     region: oregon
     dockerfilePath: ./SkillSwap/Dockerfile
     envVars:
@@ -13,6 +14,7 @@ services:
   - type: web
     name: skillswap-web
     env: node
+    plan: free
     region: oregon
     rootDir: skillswap-ui
     buildCommand: npm install && npm run build
